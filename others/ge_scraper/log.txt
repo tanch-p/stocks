@@ -1,0 +1,24 @@
+2025-09-18 21:57:13 - INFO - ====== WebDriver manager ======
+2025-09-18 21:57:13 - INFO - Get LATEST geckodriver version for None firefox
+2025-09-18 21:57:13 - INFO - Getting latest mozilla release info for v0.36.0
+2025-09-18 21:57:14 - INFO - About to download new driver from https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz
+2025-09-18 21:57:14 - INFO - Driver downloading response is 200
+2025-09-18 21:57:14 - INFO - Get LATEST geckodriver version for None firefox
+2025-09-18 21:57:15 - INFO - Get LATEST geckodriver version for None firefox
+2025-09-18 21:57:15 - INFO - Driver has been saved in cache [/home/tartarchan/.wdm/drivers/geckodriver/linux64/v0.36.0]
+2025-09-18 21:59:56 - INFO - ====== WebDriver manager ======
+2025-09-18 21:59:56 - INFO - Get LATEST geckodriver version for None firefox
+2025-09-18 21:59:56 - INFO - Getting latest mozilla release info for v0.36.0
+2025-09-18 21:59:56 - INFO - About to download new driver from https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz
+2025-09-18 21:59:57 - INFO - Driver downloading response is 200
+2025-09-18 21:59:57 - INFO - Get LATEST geckodriver version for None firefox
+2025-09-18 21:59:57 - INFO - Get LATEST geckodriver version for None firefox
+2025-09-18 21:59:57 - INFO - Driver has been saved in cache [/home/tartarchan/.wdm/drivers/geckodriver/linux64/v0.36.0]
+2025-09-18 22:00:26 - INFO - ====== WebDriver manager ======
+2025-09-18 22:00:26 - INFO - Get LATEST geckodriver version for None firefox
+2025-09-18 22:00:27 - INFO - Getting latest mozilla release info for v0.36.0
+2025-09-18 22:00:27 - INFO - About to download new driver from https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz
+2025-09-18 22:00:27 - INFO - Driver downloading response is 200
+2025-09-18 22:00:27 - INFO - Get LATEST geckodriver version for None firefox
+2025-09-18 22:00:28 - INFO - Get LATEST geckodriver version for None firefox
+2025-09-18 22:00:28 - INFO - Driver has been saved in cache [/home/tartarchan/.wdm/drivers/geckodriver/linux64/v0.36.0]
