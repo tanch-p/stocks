@@ -4,6 +4,8 @@
 DROP TABLE IF EXISTS user_stocks;
 DROP TABLE IF EXISTS stocks;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS funds CASCADE;
+DROP TABLE IF EXISTS fund_prices;
 
 -- Users table
 CREATE TABLE users (
@@ -25,7 +27,7 @@ CREATE TABLE stocks (
 
 -- Junction table: which users track which stocks
 CREATE TABLE user_stocks (
-    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     stock_id INT REFERENCES stocks(id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, stock_id)
 );

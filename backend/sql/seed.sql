@@ -1,9 +1,9 @@
 -- seed.sql: Insert sample data for development
 
 -- Users
-INSERT INTO users (email, password_hash) VALUES
-('alice@example.com', 'hash1'),
-('bob@example.com', 'hash2');
+INSERT INTO users (email,username, password_hash) VALUES
+('alice@example.com', 'alice', 'hash1'),
+('bob@example.com','bob', 'hash2');
 
 -- Stocks
 INSERT INTO stocks (symbol, name) VALUES
