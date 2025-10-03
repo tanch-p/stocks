@@ -18,6 +18,6 @@ INSERT INTO user_stocks (user_id, stock_id) VALUES
 (2, 1), -- Bob -> AAPL
 (2, 3); -- Bob -> GOOG
 
-INSERT INTO funds (name) VALUES ('ABC Growth Fund');
+INSERT INTO funds (name, fund_sg_id) VALUES ('ABC Growth Fund','ABC');
 INSERT INTO fund_prices (fund_id, price_date, bid_price, offer_price)
 VALUES (1, '2025-09-30', 1.2345, 1.3456);

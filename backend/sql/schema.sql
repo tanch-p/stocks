@@ -35,7 +35,8 @@ CREATE TABLE user_stocks (
 -- Table for fund information
 CREATE TABLE funds (
     fund_id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE
+    name TEXT NOT NULL UNIQUE,
+    fund_sg_id TEXT NOT NULL UNIQUE
 );
 
 -- Table for daily prices

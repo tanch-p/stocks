@@ -6,14 +6,14 @@ import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
+
 
 # ---------- Configuration ----------
 USER_AGENT = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
               "AppleWebKit/537.36 (KHTML, like Gecko) "
               "Chrome/120.0.0.0 Safari/537.36")
-
-# Optional proxy (example): "host:port" or "username:password@host:port"
-PROXY = None  # e.g. "1.2.3.4:3128" or None
 
 # ---------- Helpers to act "human" ----------
 def human_sleep(a=0.05, b=0.4):
