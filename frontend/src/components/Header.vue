@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import LogoIcon from '@/assets/dollar.svg'
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterLink } from 'vue-router'
 </script>
 
 <template>

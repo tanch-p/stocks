@@ -64,6 +64,7 @@ onMounted(async () => {
           label: 'title',
           data: offerData,
           borderColor: 'rgb(75, 192, 192)',
+          backgroundColor: 'rgb(75, 192, 192)',
           tension: 0.3,
         },
       ],

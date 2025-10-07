@@ -1,15 +1,9 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
-import Chart from './components/Chart.vue';
-import Header from "./components/Header.vue"
-import Footer from "./components/Footer.vue"
+import DefaultLayout from './layouts/DefaultLayout.vue';
 </script>
 
 <template>
-  <Header />
-  <Chart />
-  <RouterView />
-  <Footer/>
+  <DefaultLayout/>
 </template>
 
 <style scoped>

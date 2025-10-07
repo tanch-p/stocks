@@ -1,1 +1,13 @@
 @import 'tailwindcss';
+
+body{
+  color: #212121;
+}
+
+@theme {
+  --color-pri-color: #00796b;
+  --color-positive: #43a047;
+  --color-negative: #ff7043;
+  --color-light-gray: #F5F5F5;
+  --color-highlight: #FFD54F;
+}

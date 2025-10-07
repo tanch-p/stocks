@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import LogoIcon from '@/assets/dollar.svg'
+
 </script>
 
 <template>
-  <footer>
-    <span>Disclaimer: This website is not associated with Great Eastern or its affliates.</span>
+  <footer class="flex flex-wrap p-4 bg-gray-700 text-white">
+    <span class="text-xs">Disclaimer: This website is not associated with Great Eastern or any of its affliates.</span>
   </footer>
 </template>
