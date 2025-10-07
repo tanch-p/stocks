@@ -2,10 +2,11 @@
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 import HomeIcon from '@/assets/home.svg'
+import { useViewport } from '@/composables/useViewport'
 
 const route = useRoute()
-
 const basePath = computed(() => route.fullPath.split(/[?#]/)[0])
+const { isMobileOrTablet } = useViewport()
 
 const paths = [
   { icon: HomeIcon, path: '/', name: 'Home' },
@@ -16,6 +17,7 @@ const paths = [
 
 <template>
   <nav
+    v-if="isMobileOrTablet"
     class="fixed z-[1] bottom-0 border-t border-light-gray bg-white flex items-center justify-around w-full p-4 text-xs"
   >
     <router-link
