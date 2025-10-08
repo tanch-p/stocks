@@ -2,6 +2,7 @@
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 import HomeIcon from '@/assets/home.svg'
+import SettingsIcon from '@/assets/settings.svg'
 import { useViewport } from '@/composables/useViewport'
 
 const route = useRoute()
@@ -11,7 +12,7 @@ const { isMobileOrTablet } = useViewport()
 const paths = [
   { icon: HomeIcon, path: '/', name: 'Home' },
   { icon: HomeIcon, path: '/about', name: 'About' },
-  { icon: HomeIcon, path: '/settings', name: 'Settings' },
+  { icon: SettingsIcon, path: '/settings', name: 'Settings' },
 ]
 </script>
 
@@ -35,7 +36,18 @@ const paths = [
 
 <style scoped>
 .active {
-  color: dodgerblue;
-  font-weight: bold;
+  color: var(--color-pri-color);
+  font-weight: 600;
+}
+
+.active svg {
+  fill: var(--color-pri-color);
+  stroke: var(--color-pri-color);
+}
+svg {
+  fill: none;
+}
+svg:hover {
+  stroke: var(--color-pri-color);
 }
 </style>

@@ -12,9 +12,33 @@ CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
     username VARCHAR(50) UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
+    phone TEXT UNIQUE,
+    is_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE user_passwords (
+    user_id INT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
+    password_hash TEXT NOT NULL,
+    last_changed TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE user_otps (
+    otp_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    otp_code TEXT NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    is_used BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE user_sessions (
+    session_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    token TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    expires_at TIMESTAMP NOT NULL
 );
 
 -- Stocks table

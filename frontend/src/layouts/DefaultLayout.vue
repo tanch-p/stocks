@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute, RouterView } from 'vue-router'
+import { useRoute } from 'vue-router'
 import AppNavbar from '@/components/AppNavbar.vue'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
@@ -15,7 +15,7 @@ const hideNavbar = computed(() => basePath.value === '/login')
   <Header />
   <div>
     <AppNavbar v-if="!hideNavbar" />
-    <RouterView />
+    <router-view />
   </div>
   <Footer />
 </template>

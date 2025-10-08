@@ -7,6 +7,8 @@ import uvicorn
 import psycopg2
 import psycopg2.extras
 from datetime import date
+from routes import auth
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -183,3 +185,8 @@ if __name__ == "__main__":
         reload=True,
         log_level="info"
     )
+from database import Base, engine
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="User Auth API")
+app.include_router(auth.router)
