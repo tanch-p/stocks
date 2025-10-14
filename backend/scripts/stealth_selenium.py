@@ -7,7 +7,24 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException, NoSuchElementException
+
+months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+]
+
+years = [2025, 2024, 2023]
 
 
 # ---------- Configuration ----------
@@ -16,9 +33,12 @@ USER_AGENT = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
               "Chrome/120.0.0.0 Safari/537.36")
 
 # ---------- Helpers to act "human" ----------
+
+
 def human_sleep(a=0.05, b=0.4):
     """Short randomized pause between actions."""
     time.sleep(random.uniform(a, b))
+
 
 def human_type(element, text, min_delay=0.03, max_delay=0.18):
     """Type text into an element with randomized per-key delays."""
@@ -26,14 +46,16 @@ def human_type(element, text, min_delay=0.03, max_delay=0.18):
         element.send_keys(ch)
         time.sleep(random.uniform(min_delay, max_delay))
 
+
 def human_move_and_click(driver, element):
     """Move cursor in small increments then click, via ActionChains."""
     actions = ActionChains(driver)
     # simulate multiple small moves
     steps = random.randint(5, 12)
     for _ in range(steps):
-        actions.move_by_offset(random.uniform(-5,5), random.uniform(-5,5))
-    actions.move_to_element(element).pause(random.uniform(0.05, 0.3)).click().perform()
+        actions.move_by_offset(random.uniform(-5, 5), random.uniform(-5, 5))
+    actions.move_to_element(element).pause(
+        random.uniform(0.05, 0.3)).click().perform()
     human_sleep(0.1, 0.4)
 
 
@@ -66,10 +88,12 @@ def add_fund_price(date, bid_price, offer_price):
         writer = csv.writer(file)
         writer.writerow([date, bid_price, offer_price])
 
+
 def open_ge_page(driver):
     print("Opening GE funds page...")
     driver.get("https://www.greateasternlife.com/sg/en/personal-insurance/our-products/wealth-accumulation/great-invest-advantage/greatlink-funds-prices.html")
     time.sleep(10)
+
 
 def get_fund_price(driver, fund_name):
     wait = WebDriverWait(driver, 10)
@@ -117,50 +141,115 @@ def get_fund_price(driver, fund_name):
         print("Target row not found.")
 
 
-def get_price_history(driver, duration=5):
-    # default 5 years
-    pass
+def scrap_historical_price_table(driver):
+    data = []
 
-def scrap_all_funds(driver):
+    # Locate the table body by class name
+    table_body = driver.find_element(
+        By.CSS_SELECTOR, "#targetTableBody2 tbody.targetTableBody")
+
+    # Get all rows in the table body
+    rows = table_body.find_elements(By.TAG_NAME, "tr")
+
+    # Loop through each row
+    for row in rows:
+        cells = row.find_elements(By.TAG_NAME, "td")
+        valuation = cells[0].text.strip()
+        bid_price = cells[1].text.strip()
+        offer_price = cells[2].text.strip()
+
+        data.append({
+            "Valuation": valuation,
+            "Bid Price": bid_price,
+            "Offer Price": offer_price
+        })
+
+    # Example: print the data
+    for entry in data:
+        print(entry)
+
+    try:
+        next_link = driver.find_element(
+            By.XPATH, "//a[normalize-space(text())='Next']"
+        )
+        next_link.click()
+    except NoSuchElementException:
+        print("Element not found!")
+
+    return data
+
+
+def get_all_funds_historical_prices(driver):
     available_funds = driver.find_element(By.ID, "availablefunds")
     select_obj = Select(available_funds)
-    all_options = select_obj.options
-
+    all_option_values = [option.get_attribute(
+        "value") for option in select_obj.options if option.get_attribute("value") != 'all']
+    print(all_option_values)
     add_link = driver.find_element(By.LINK_TEXT, "Add »")
     reset_link = driver.find_element(By.LINK_TEXT, "Reset Selection")
     display_link = driver.find_element(By.LINK_TEXT, "Display Fund Prices")
+    mth_div = driver.find_element(By.ID, "selectMth")
+    year_input = driver.find_element(By.ID, "selectYr")
     display_price = driver.find_element(
         "xpath", "//input[@value='display-prices-by-month']")
-    display_price.click()
-    print("click")
-    input("")
-    for option in all_options:
-        option_value = option.get_attribute("value")
-        option_text = option.text
 
-        # Skip the 'all' option
-        if option_value == "all":
-            continue
+    """
+    STEPS
+    1. Select option
+    2. Click Add button
+    3. Click Display prices by month
+    4. Select month
+    5. Fill in year
+    6. Click Display fund prices
+    7. Scrape 
+    8. Click Next if have, repeat 7
+    9. Move on to next date
+    10. When done with dates, save data to a csv file and move on to next option
+    """
+    for value in all_option_values:
+        element = driver.find_element(
+            "xpath", f"//option[@value='{value}']")
+        element.click()
+        human_sleep()
 
-        print(f"Value: {option_value}, Text: {option_text}")
-        option.click()
-        time.sleep(0.5)
         add_link.click()
+        human_sleep()
+
+        display_price.click()
+        human_sleep()
+
+        for year in years:
+            year_input.send_keys(f"{year}")
+            human_sleep()
+            for month in months:
+                mth_div.click()
+                human_sleep()
+                label_element = driver.find_element(
+                    By.XPATH, f"//label[@class='dd-option-text' and normalize-space(text())='{month}']"
+                )
+                label_element.click()
+                human_sleep()
+                display_link.click()
+                time.sleep(10)
+
+                scrap_historical_price_table(driver)
+
+        reset_link.click()
 
 
 def main():
-    driver = uc.Chrome(headless=False,use_subprocess=False)
+    driver = uc.Chrome(headless=False, use_subprocess=False)
     try:
         open_ge_page(driver)
         fund_name = "GreatLink Global Real Estate Securities Fund"
         # get_fund_price(driver, fund_name)
-        scrap_all_funds(driver)
+        get_all_funds_historical_prices(driver)
 
     except KeyboardInterrupt:
         print("\nInterrupted by user")
     except Exception as e:
         print(f"Error: {e}")
-        
+
     finally:
         driver.quit()
         print("Browser closed")
