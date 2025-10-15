@@ -7,9 +7,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException, NoSuchElementException, ElementNotInteractableException
 import os
 import traceback
+import re
 
 months = [
     "January",
@@ -35,31 +37,9 @@ USER_AGENT = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
               "Chrome/120.0.0.0 Safari/537.36")
 
 # ---------- Helpers to act "human" ----------
-
-
 def human_sleep(a=1, b=1.5):
     """Short randomized pause between actions."""
     time.sleep(random.uniform(a, b))
-
-
-def human_type(element, text, min_delay=0.03, max_delay=0.18):
-    """Type text into an element with randomized per-key delays."""
-    for ch in text:
-        element.send_keys(ch)
-        time.sleep(random.uniform(min_delay, max_delay))
-
-
-def human_move_and_click(driver, element):
-    """Move cursor in small increments then click, via ActionChains."""
-    actions = ActionChains(driver)
-    # simulate multiple small moves
-    steps = random.randint(5, 12)
-    for _ in range(steps):
-        actions.move_by_offset(random.uniform(-5, 5), random.uniform(-5, 5))
-    actions.move_to_element(element).pause(
-        random.uniform(0.05, 0.3)).click().perform()
-    human_sleep(0.1, 0.4)
-
 
 logging.basicConfig(
     filename="log.txt",         # Log file name
@@ -68,79 +48,68 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S"  # Timestamp format
 )
 
-
-def write_to_csv():
-    with open('fund_data.csv', 'w', newline='') as file:
-        fieldnames = ['Date', 'Bid Price', 'Offer Price']
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-
-        writer.writeheader()
-
-        # Write data
-        writer.writerow(
-            {'Date': '2025-09-30', 'Bid Price': 10.25, 'Offer Price': 10.35})
-        writer.writerow(
-            {'Date': '2025-09-29', 'Bid Price': 10.20, 'Offer Price': 10.30})
-        writer.writerow(
-            {'Date': '2025-09-28', 'Bid Price': 10.18, 'Offer Price': 10.28})
-
-
-def add_fund_price(date, bid_price, offer_price):
-    with open('fund_data.csv', 'a', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow([date, bid_price, offer_price])
-
-
 def open_ge_page(driver):
     print("Opening GE funds page...")
     driver.get("https://www.greateasternlife.com/sg/en/personal-insurance/our-products/wealth-accumulation/great-invest-advantage/greatlink-funds-prices.html")
     time.sleep(10)
 
 
-def get_fund_price(driver, fund_name):
+def get_daily_prices(driver):
+    open_ge_page(driver)
     wait = WebDriverWait(driver, 10)
-    row = None
 
     while True:
         try:
-            # try to find the target row
-            row = driver.find_element(
-                By.XPATH,
-                f'//tr[td[1][normalize-space()="{fund_name}"]]')
-            # if found, break the loop
-            if row.is_displayed():
-                break
-        except NoSuchElementException:
-            pass
-
-        # try clicking the Load More button if it exists
-        try:
+            # Wait until the div is visible and clickable
             load_more = wait.until(
-                EC.presence_of_element_located((By.ID, "loadmore1")))
-            if load_more.is_displayed() and load_more.is_enabled():
-                driver.execute_script("arguments[0].click();", load_more)
-                # optionally wait a bit for new rows to load
-                WebDriverWait(driver, 5).until(
-                    EC.presence_of_all_elements_located((By.XPATH, "//tr"))
-                )
+                EC.element_to_be_clickable((By.ID, "loadmore1"))
+            )
+
+            # Check if the element is actually visible (not display:none)
+            if load_more.is_displayed():
+                print("Clicking 'Load more'...")
+                load_more.click()
+                time.sleep(1)
             else:
-                break  # no more button
+                print("'Load more' hidden (display:none). Stopping.")
+                break
+
+            driver.implicitly_wait(3)
+
         except TimeoutException:
-            break  # no more button
+            print("No more 'Load more' button found or not clickable.")
+            break
         except ElementClickInterceptedException:
-            break  # something blocked clicking
+            print("Click intercepted — maybe a popup or overlay. Retrying later.")
+            break
 
-    if row:
-        tds = row.find_elements(By.TAG_NAME, "td")
-        fund_name = tds[0].text
-        bid_price = tds[1].text
-        offer_price = tds[2].text
+    # --- Extract valuation date from header ---
+    header_date_element = driver.find_element(By.ID, "headerDate")
+    # Example text: "(Valuation Date:10 Oct 2025)"
+    match = re.search(r"Valuation Date:(.*)\)", header_date_element.text)
+    valuation_date = match.group(1).strip() if match else "Unknown"
 
-        print(f"Fund: {fund_name}")
-        print(f"Bid Price: {bid_price}")
-        print(f"Offer Price: {offer_price}")
-    else:
-        print("Target row not found.")
+    # --- Extract table body ---
+    table_body = driver.find_element(By.ID, "targetTableBody1")
+    rows = table_body.find_elements(By.TAG_NAME, "tr")
+
+    data = []
+
+    for row in rows:
+        cells = row.find_elements(By.TAG_NAME, "td")
+        if len(cells) >= 3:
+            fund_name = cells[0].text.strip()
+            bid_price = cells[1].text.strip()
+            offer_price = cells[2].text.strip()
+
+            data.append({
+                "fund_name": fund_name,
+                "valuation_date": valuation_date,
+                "bid_price": bid_price,
+                "offer_price": offer_price
+            })
+
+    return data
 
 
 def scrap_historical_price_table(driver):
@@ -198,10 +167,12 @@ def scrap_historical_price_table(driver):
             writer.writeheader()
         writer.writerows(data)
 
-    print(f"✅ Data for '{fund_name}' appended to {csv_file}")
+    print(f"✅ {len(data)} rows saved saved for {fund_name} → {csv_file}")
 
-
+# Used to generate a csv file for seed data
 def get_all_funds_historical_prices(driver):
+    open_ge_page(driver)
+
     available_funds = driver.find_element(By.ID, "availablefunds")
     select_obj = Select(available_funds)
     all_option_values = [option.get_attribute(
@@ -228,8 +199,9 @@ def get_all_funds_historical_prices(driver):
     6. Click Display fund prices
     7. Scrape 
     8. Click Next if have, repeat 7
-    9. Move on to next date
-    10. When done with dates, save data to a csv file and move on to next option
+    9. Save data to csv file
+    10. Move on to next date
+    11. When done with dates, reset selection and move on to next option
     """
     for value in all_option_values:
         element = driver.find_element(
@@ -282,10 +254,8 @@ def get_all_funds_historical_prices(driver):
 def main():
     driver = uc.Chrome(headless=False, use_subprocess=False)
     try:
-        open_ge_page(driver)
-        fund_name = "GreatLink Global Real Estate Securities Fund"
-        # get_fund_price(driver, fund_name)
-        get_all_funds_historical_prices(driver)
+        get_daily_prices(driver)
+        # get_all_funds_historical_prices(driver)
 
     except KeyboardInterrupt:
         print("\nInterrupted by user")
