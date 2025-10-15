@@ -3,6 +3,7 @@ import undetected_chromedriver as uc
 import psycopg2
 from operator import itemgetter
 from dotenv import load_dotenv
+import os
 
 # Load environment variables from .env file
 load_dotenv()
