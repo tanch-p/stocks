@@ -1,7 +1,0 @@
-2025-10-14 16:13:22 - INFO - patching driver executable /Users/tanch/Library/Application Support/undetected_chromedriver/undetected_chromedriver
-2025-10-14 16:21:41 - INFO - patching driver executable /Users/tanch/Library/Application Support/undetected_chromedriver/undetected_chromedriver
-2025-10-14 16:22:43 - INFO - patching driver executable /Users/tanch/Library/Application Support/undetected_chromedriver/undetected_chromedriver
-2025-10-14 16:27:23 - INFO - patching driver executable /Users/tanch/Library/Application Support/undetected_chromedriver/undetected_chromedriver
-2025-10-14 17:02:03 - INFO - patching driver executable /Users/tanch/Library/Application Support/undetected_chromedriver/undetected_chromedriver
-2025-10-14 17:04:22 - INFO - patching driver executable /Users/tanch/Library/Application Support/undetected_chromedriver/undetected_chromedriver
-2025-10-14 17:19:01 - INFO - patching driver executable /Users/tanch/Library/Application Support/undetected_chromedriver/undetected_chromedriver

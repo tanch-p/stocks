@@ -7,7 +7,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException, NoSuchElementException
+from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException, NoSuchElementException, ElementNotInteractableException
+import os
+import traceback
 
 months = [
     "January",
@@ -24,7 +26,7 @@ months = [
     "December"
 ]
 
-years = [2025, 2024, 2023]
+years = [2023, 2024, 2025]
 
 
 # ---------- Configuration ----------
@@ -35,7 +37,7 @@ USER_AGENT = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
 # ---------- Helpers to act "human" ----------
 
 
-def human_sleep(a=0.05, b=0.4):
+def human_sleep(a=1, b=1.5):
     """Short randomized pause between actions."""
     time.sleep(random.uniform(a, b))
 
@@ -143,40 +145,60 @@ def get_fund_price(driver, fund_name):
 
 def scrap_historical_price_table(driver):
     data = []
+    error_elements = driver.find_elements(
+        By.CSS_SELECTOR,
+        "#targetTableBody3 .regError.marginBottom25"
+    )
+    if error_elements:
+        print("⚠️ Error found:", error_elements[0].text)
+        return
+    fund_name = driver.find_element(
+        By.CSS_SELECTOR, "#targetTableBody2 h3").text.strip()
+    while (True):
+        # Locate the table body by class name
+        table_body = driver.find_element(
+            By.CSS_SELECTOR, "#targetTableBody2 tbody.targetTableBody")
 
-    # Locate the table body by class name
-    table_body = driver.find_element(
-        By.CSS_SELECTOR, "#targetTableBody2 tbody.targetTableBody")
+        # Get all rows in the table body
+        rows = table_body.find_elements(By.TAG_NAME, "tr")
 
-    # Get all rows in the table body
-    rows = table_body.find_elements(By.TAG_NAME, "tr")
+        # Loop through each row
+        for row in rows:
+            cells = row.find_elements(By.TAG_NAME, "td")
+            valuation = cells[0].text.strip()
+            bid_price = cells[1].text.strip()
+            offer_price = cells[2].text.strip()
 
-    # Loop through each row
-    for row in rows:
-        cells = row.find_elements(By.TAG_NAME, "td")
-        valuation = cells[0].text.strip()
-        bid_price = cells[1].text.strip()
-        offer_price = cells[2].text.strip()
+            data.append({
+                "Fund Name": fund_name,
+                "Valuation": valuation,
+                "Bid Price": bid_price,
+                "Offer Price": offer_price
+            })
 
-        data.append({
-            "Valuation": valuation,
-            "Bid Price": bid_price,
-            "Offer Price": offer_price
-        })
+        try:
+            next_link = driver.find_element(
+                By.XPATH, "//a[normalize-space(text())='Next']"
+            )
+            next_link.click()
+            # Allocate time for page to load the data
+            time.sleep(10)
 
-    # Example: print the data
-    for entry in data:
-        print(entry)
+        except NoSuchElementException:
+            break
 
-    try:
-        next_link = driver.find_element(
-            By.XPATH, "//a[normalize-space(text())='Next']"
-        )
-        next_link.click()
-    except NoSuchElementException:
-        print("Element not found!")
+    csv_file = "fund_prices.csv"
+    file_exists = os.path.isfile(csv_file)
 
-    return data
+    with open(csv_file, mode="a", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(
+            file, fieldnames=["Fund Name", "Valuation", "Bid Price", "Offer Price"])
+        # Write header only if file is new
+        if not file_exists:
+            writer.writeheader()
+        writer.writerows(data)
+
+    print(f"✅ Data for '{fund_name}' appended to {csv_file}")
 
 
 def get_all_funds_historical_prices(driver):
@@ -192,6 +214,9 @@ def get_all_funds_historical_prices(driver):
     year_input = driver.find_element(By.ID, "selectYr")
     display_price = driver.find_element(
         "xpath", "//input[@value='display-prices-by-month']")
+    title_ele = driver.find_element(
+        By.XPATH, "//h4[normalize-space(text())='Historical Prices']"
+    )
 
     """
     STEPS
@@ -219,21 +244,38 @@ def get_all_funds_historical_prices(driver):
         human_sleep()
 
         for year in years:
-            year_input.send_keys(f"{year}")
-            human_sleep()
-            for month in months:
-                mth_div.click()
+            try:
+                year_input.clear()
+                year_input.send_keys(f"{year}")
                 human_sleep()
-                label_element = driver.find_element(
-                    By.XPATH, f"//label[@class='dd-option-text' and normalize-space(text())='{month}']"
-                )
-                label_element.click()
-                human_sleep()
-                display_link.click()
-                time.sleep(10)
+                for i, month in enumerate(months):
+                    month_changed = False
+                    while not month_changed:
+                        try:
+                            mth_div.click()
+                            time.sleep(3) # Timeout for full element to load and be interactable
+                            label_element = driver.find_element(
+                                By.XPATH, f"//label[@class='dd-option-text' and normalize-space(text())='{month}']"
+                            )
+                            label_element.click()
+                            human_sleep()
+                            month_changed = True
+                        except Exception:
+                            traceback.print_exc()
+                            break
+                    human_sleep()
+                    display_link.click()
 
-                scrap_historical_price_table(driver)
+                    # Allocate time for page to load the data
+                    time.sleep(10)
 
+                    # Just to reset any click issues
+                    title_ele.click()
+
+                    scrap_historical_price_table(driver)
+                    time.sleep(60)
+            except Exception:
+                traceback.print_exc()
         reset_link.click()
 
 
