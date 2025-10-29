@@ -41,26 +41,18 @@ CREATE TABLE user_sessions (
     expires_at TIMESTAMP NOT NULL
 );
 
--- Stocks table
-CREATE TABLE stocks (
-    id SERIAL PRIMARY KEY,
-    symbol TEXT NOT NULL,
-    name TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
-);
-
--- Junction table: which users track which stocks
-CREATE TABLE user_stocks (
-    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
-    stock_id INT REFERENCES stocks(id) ON DELETE CASCADE,
-    PRIMARY KEY (user_id, stock_id)
-);
-
 -- Table for fund information
 CREATE TABLE funds (
     fund_id SERIAL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
     fund_sg_id TEXT NOT NULL UNIQUE
+);
+
+-- Junction table: which users track which funds
+CREATE TABLE user_funds (
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    fund_id INT REFERENCES funds(fund_id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, fund_id)
 );
 
 -- Table for daily prices

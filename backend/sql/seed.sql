@@ -5,14 +5,8 @@ INSERT INTO users (email,username, password_hash) VALUES
 ('alice@example.com', 'alice', 'hash1'),
 ('bob@example.com','bob', 'hash2');
 
--- Stocks
-INSERT INTO stocks (symbol, name) VALUES
-('AAPL', 'Apple Inc.'),
-('TSLA', 'Tesla Inc.'),
-('GOOG', 'Alphabet Inc.');
-
--- User-Stock relationships
-INSERT INTO user_stocks (user_id, stock_id) VALUES
+-- User-Fund relationships
+INSERT INTO user_funds (user_id, fund_id) VALUES
 (1, 1), -- Alice -> AAPL
 (1, 2), -- Alice -> TSLA
 (2, 1), -- Bob -> AAPL
